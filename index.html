@@ -5,13 +5,9 @@
   <title>Inscription Gratuite — DIGIY Client</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#16a34a" />
-  
+
   <style>
-    :root{
-      --green:#16a34a;
-      --gold:#facc15;
-      --orange:#f97316;
-    }
+    :root{ --green:#16a34a; --gold:#facc15; --orange:#f97316; }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
       font-family:system-ui,-apple-system,sans-serif;
@@ -19,164 +15,82 @@
         radial-gradient(circle at 20% 10%, rgba(250,204,21,0.15), transparent 50%),
         radial-gradient(circle at 80% 90%, rgba(22,163,74,0.12), transparent 50%),
         linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
     }
     .box{
-      background:#ffffff;
-      padding:40px;
-      border-radius:24px;
+      background:#ffffff; padding:40px; border-radius:24px;
       box-shadow:0 20px 60px rgba(0,0,0,.12);
-      max-width:500px;
-      width:100%;
+      max-width:500px; width:100%;
       border:1px solid rgba(148,163,184,0.2);
     }
     .logo{
-      width:64px;
-      height:64px;
-      border-radius:20px;
+      width:64px; height:64px; border-radius:20px;
       background:linear-gradient(135deg,var(--gold),var(--orange));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:32px;
-      margin:0 auto 20px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:32px; margin:0 auto 20px;
       box-shadow:0 12px 32px rgba(249,115,22,0.25);
     }
     h1{
-      margin:0 0 10px;
-      font-size:32px;
-      text-align:center;
+      margin:0 0 10px; font-size:32px; text-align:center;
       background:linear-gradient(135deg,var(--green),var(--gold));
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
       font-weight:900;
     }
     .sub{
-      color:#64748b;
-      margin:0 0 28px;
-      font-size:15px;
-      line-height:1.6;
-      text-align:center;
-      font-weight:600;
+      color:#64748b; margin:0 0 28px; font-size:15px; line-height:1.6;
+      text-align:center; font-weight:600;
     }
     .sub strong{color:#0f172a}
     .free{
       background:linear-gradient(135deg, #dcfce7, #d1fae5);
       border:2px solid #22c55e;
-      padding:14px;
-      border-radius:14px;
-      margin-bottom:28px;
-      font-weight:900;
-      color:#065f46;
-      text-align:center;
-      font-size:13px;
-      letter-spacing:.08em;
+      padding:14px; border-radius:14px; margin-bottom:28px;
+      font-weight:900; color:#065f46; text-align:center;
+      font-size:13px; letter-spacing:.08em;
+    }
+    .features{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:28px;
+    }
+    .feature{
+      background:#f8fafc; padding:12px; border-radius:10px;
+      border:1px solid #e2e8f0;
+      font-size:13px; font-weight:700; color:#475569;
+      display:flex; align-items:center; gap:8px;
     }
     .form-group{margin-bottom:18px}
-    label{
-      display:block;
-      margin-bottom:8px;
-      font-weight:800;
-      font-size:14px;
-      color:#0f172a;
-    }
+    label{display:block; margin-bottom:8px; font-weight:800; font-size:14px; color:#0f172a}
     input{
-      width:100%;
-      padding:14px 16px;
-      border:2px solid #e2e8f0;
-      border-radius:12px;
-      font-size:15px;
-      background:#ffffff;
-      color:#0f172a;
-      font-weight:600;
+      width:100%; padding:14px 16px;
+      border:2px solid #e2e8f0; border-radius:12px;
+      font-size:15px; background:#ffffff; color:#0f172a; font-weight:600;
       transition:all .2s;
     }
-    input:focus{
-      outline:none;
-      border-color:var(--green);
-      box-shadow:0 0 0 3px rgba(22,163,74,0.1);
-    }
+    input:focus{outline:none; border-color:var(--green); box-shadow:0 0 0 3px rgba(22,163,74,0.1)}
     input::placeholder{color:#94a3b8}
     .btn{
-      width:100%;
-      padding:16px;
+      width:100%; padding:16px;
       background:linear-gradient(135deg,var(--green),#22c55e);
-      color:#fff;
-      border:none;
-      border-radius:12px;
-      font-weight:900;
-      font-size:16px;
-      cursor:pointer;
-      letter-spacing:.08em;
-      text-transform:uppercase;
+      color:#fff; border:none; border-radius:12px;
+      font-weight:900; font-size:16px; cursor:pointer;
+      letter-spacing:.08em; text-transform:uppercase;
       box-shadow:0 8px 20px rgba(22,163,74,0.3);
       transition:all .2s;
     }
-    .btn:hover{
-      transform:translateY(-2px);
-      box-shadow:0 12px 28px rgba(22,163,74,0.4);
-    }
-    .btn:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-      transform:none;
-    }
+    .btn:hover{transform:translateY(-2px); box-shadow:0 12px 28px rgba(22,163,74,0.4)}
+    .btn:disabled{opacity:.6; cursor:not-allowed; transform:none}
     .msg{
-      margin:16px 0 0;
-      padding:14px;
-      border-radius:10px;
-      font-size:14px;
-      display:none;
-      font-weight:700;
+      margin:16px 0 0; padding:14px; border-radius:10px;
+      font-size:14px; display:none; font-weight:700;
     }
-    .msg.error{
-      background:#fee2e2;
-      color:#991b1b;
-      border:2px solid #fca5a5;
-      display:block;
-    }
-    .msg.success{
-      background:#dcfce7;
-      color:#065f46;
-      border:2px solid #86efac;
-      display:block;
-    }
+    .msg.error{background:#fee2e2; color:#991b1b; border:2px solid #fca5a5; display:block}
+    .msg.success{background:#dcfce7; color:#065f46; border:2px solid #86efac; display:block}
     .footer{
-      text-align:center;
-      margin:24px 0 0;
-      color:#64748b;
-      font-size:14px;
-      font-weight:600;
+      text-align:center; margin:24px 0 0;
+      color:#64748b; font-size:14px; font-weight:600;
+      line-height:1.7;
     }
-    .footer a{
-      color:var(--green);
-      text-decoration:none;
-      font-weight:800;
-      transition:color .2s;
-    }
+    .footer a{color:var(--green); text-decoration:none; font-weight:800; transition:color .2s}
     .footer a:hover{color:var(--gold)}
-    .features{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:28px;
-    }
-    .feature{
-      background:#f8fafc;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid #e2e8f0;
-      font-size:13px;
-      font-weight:700;
-      color:#475569;
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
     @media(max-width:480px){
       .features{grid-template-columns:1fr}
       .box{padding:28px 20px}
@@ -193,9 +107,7 @@
     <strong>100% gratuit</strong>, accès immédiat aux apps clients.
   </div>
 
-  <div class="free">
-    ✅ GRATUIT À VIE · 0% COMMISSION · PAIEMENT DIRECT
-  </div>
+  <div class="free">✅ GRATUIT À VIE · 0% COMMISSION · PAIEMENT DIRECT</div>
 
   <div class="features">
     <div class="feature">🚗 Commander VTC</div>
@@ -230,14 +142,13 @@
       <input type="password" id="password" required placeholder="Min. 6 caractères" autocomplete="new-password" />
     </div>
 
-    <button type="submit" class="btn" id="btnSubmit">
-      S'inscrire gratuitement 🦅
-    </button>
+    <button type="submit" class="btn" id="btnSubmit">S'inscrire gratuitement 🦅</button>
   </form>
 
   <div id="msg" class="msg"></div>
 
   <div class="footer">
+    Déjà inscrit ? <a href="https://beauville.github.io/digiy-espace-client/">Ouvrir mon espace</a><br>
     Vous êtes PRO ? <a href="commencer-a-payer.html">S'abonner ici</a><br>
     <a href="index.html" style="color:#94a3b8;font-weight:600;">← Retour admin</a>
   </div>
@@ -261,95 +172,85 @@ const msg = document.getElementById('msg');
 
 // Détecte l'app de destination depuis l'URL
 const urlParams = new URLSearchParams(window.location.search);
-const targetApp = urlParams.get('app') || 'hub';
+const targetApp = (urlParams.get('app') || 'hub').toLowerCase();
 
-// Redirection UNIQUE vers l'espace client gratuit DIGIY
+// ✅ Redirection UNIQUE vers TON espace client gratuit
 const CLIENT_APPS = {
   driver: 'https://beauville.github.io/digiy-espace-client/?app=driver',
-  resa: 'https://beauville.github.io/digiy-espace-client/?app=resa',
-  loc: 'https://beauville.github.io/digiy-espace-client/?app=loc',
-  fret: 'https://beauville.github.io/digiy-espace-client/?app=fret',
-  market: 'https://beauville.// Redirection UNIQUE vers l'espace client gratuit DIGIY
-const CLIENT_APPS = {
-  driver: 'https://beauville.github.io/digiy-espace-client/?app=driver',
-  resa: 'https://beauville.github.io/digiy-espace-client/?app=resa',
-  loc: 'https://beauville.github.io/digiy-espace-client/?app=loc',
-  fret: 'https://beauville.github.io/digiy-espace-client/?app=fret',
+  resa:   'https://beauville.github.io/digiy-espace-client/?app=resa',
+  loc:    'https://beauville.github.io/digiy-espace-client/?app=loc',
+  fret:   'https://beauville.github.io/digiy-espace-client/?app=fret',
   market: 'https://beauville.github.io/digiy-espace-client/?app=market',
-  hub: 'https://beauville.github.io/digiy-espace-client/'
+  hub:    'https://beauville.github.io/digiy-espace-client/'
 };
-.io/digiy-espace-client/?app=market',
-  hub: 'https://beauville.github.io/digiy-espace-client/'
-};
-
 
 function showMsg(text, type = 'error') {
   msg.textContent = text;
   msg.className = 'msg ' + type;
 }
 
+// petit nettoyage téléphone (pour email temporaire)
+function digitsOnly(v){ return (v||'').replace(/[^\d]/g,''); }
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  
+
   const fullName = document.getElementById('fullName').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const email = document.getElementById('email').value.trim();
   const city = document.getElementById('city').value.trim();
   const password = document.getElementById('password').value;
 
-  if (!fullName || !phone || !city || !password) {
-    showMsg('⚠️ Veuillez remplir tous les champs obligatoires');
-    return;
-  }
-
-  if (password.length < 6) {
-    showMsg('⚠️ Le mot de passe doit contenir au moins 6 caractères');
-    return;
-  }
+  if (!fullName || !phone || !city || !password) return showMsg('⚠️ Veuillez remplir tous les champs obligatoires');
+  if (password.length < 6) return showMsg('⚠️ Le mot de passe doit contenir au moins 6 caractères');
 
   btnSubmit.disabled = true;
   btnSubmit.textContent = '⏳ Inscription en cours...';
   msg.style.display = 'none';
 
   try {
+    const phoneDigits = digitsOnly(phone);
+    const tempEmail = email || (`c${phoneDigits}.${Date.now()}@digiy.temp`);
+
     console.log("Création compte auth...");
-    
+
     const { data: authData, error: authError } = await sb.auth.signUp({
-      email: email || `${phone.replace(/[^0-9]/g, '')}@digiy.temp`,
+      email: tempEmail,
       password: password,
       options: {
-        data: {
-          full_name: fullName,
-          phone: phone,
-          user_type: 'client'
-        }
+        data: { full_name: fullName, phone: phone, user_type: 'client' }
       }
     });
 
     if (authError) throw authError;
 
-    console.log("Création profil client...");
+    // Si ton projet exige confirmation email, user peut être null → on redirige quand même
+    const userId = authData?.user?.id;
 
-    const { error: profileError } = await sb
-      .from('client_accounts')
-      .insert({
-        user_id: authData.user.id,
-        full_name: fullName,
-        phone: phone,
-        email: email || null,
-        city: city,
-        is_active: true
-      });
+    if (userId) {
+      console.log("Création profil client...");
 
-    if (profileError) throw profileError;
+      const { error: profileError } = await sb
+        .from('client_accounts')
+        .insert({
+          user_id: userId,
+          full_name: fullName,
+          phone: phone,
+          email: email || null,
+          city: city,
+          is_active: true
+        });
 
-    showMsg(`✅ Inscription réussie ! Redirection vers l'app ${targetApp.toUpperCase()}...`, 'success');
-    
-    // Redirection vers l'app client appropriée
+      // Si RLS bloque, on ne casse pas l'inscription (le compte auth est déjà créé)
+      if (profileError) console.warn("Profil non inséré (RLS ?):", profileError);
+    }
+
+    showMsg('✅ Inscription réussie ! Ouverture de ton espace client...', 'success');
+
     setTimeout(() => {
       const redirectUrl = CLIENT_APPS[targetApp] || CLIENT_APPS.hub;
       window.location.href = redirectUrl;
-    }, 2000);
+    }, 1200);
 
   } catch (err) {
     console.error('Erreur inscription:', err);
@@ -361,20 +262,3 @@ form.addEventListener('submit', async (e) => {
 </script>
 </body>
 </html>
-
-🔗 LIENS À METTRE DANS TES APPS CLIENTS
-Dans chaque app client (DRIVER, RÉSA, LOC, etc.), ajoute un bouton :
-html<!-- Bouton dans DIGIY DRIVER Client -->
-<a href="https://beauville.github.io/digiy-hub-admin/inscription-client.html?app=driver">
-  S'inscrire gratuitement
-</a>
-
-<!-- Bouton dans DIGIY RÉSA Client -->
-<a href="https://beauville.github.io/digiy-hub-admin/inscription-client.html?app=resa">
-  S'inscrire gratuitement
-</a>
-
-<!-- Bouton dans DIGIY LOC Client -->
-<a href="https://beauville.github.io/digiy-hub-admin/inscription-client.html?app=loc">
-  S'inscrire gratuitement
-</a>

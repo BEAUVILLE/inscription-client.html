@@ -1,0 +1,456 @@
+🦅🔥 VOILÀ TON README.md COMPLET FRÉROT !
+markdown# 🦅 DIGIY HUB ADMIN
+
+**Centre de contrôle administratif DIGIYLYFE**  
+0% commission · Paiement direct · Souveraineté digitale
+
+---
+
+## 🎯 Vue d'ensemble
+
+DIGIY HUB ADMIN est le système d'administration complet pour gérer l'écosystème DIGIYLYFE :
+- Gestion multi-niveaux des administrateurs
+- Tarification dynamique par ville et service
+- Abonnements PRO avec paliers intelligents
+- Monitoring opérationnel temps réel
+- Audit financier et paiements Wave
+
+**Demo Live :** https://beauville.github.io/digiy-hub-admin/
+
+---
+
+## 🏗️ Architecture
+
+### Base de données (Supabase)
+```
+📊 TABLES PRINCIPALES
+├─ admin_users              (Administrateurs avec rôles)
+├─ client_accounts          (Clients gratuits - À venir)
+├─ pro_accounts             (Professionnels abonnés)
+├─ pro_modules              (Modules actifs par PRO)
+├─ city_pricing_ride        (Tarifs VTC par ville)
+├─ city_pricing_fret        (Tarifs livraison par ville)
+├─ driver_profiles          (Chauffeurs en ligne)
+├─ ride_requests            (Demandes de courses)
+├─ fret_requests            (Demandes de livraisons)
+└─ subscription_payments    (Historique paiements)
+
+🔐 SÉCURITÉ
+├─ Row Level Security (RLS) activé
+├─ Policies authenticated sur toutes les tables
+├─ Trigger auto : nouveaux users → viewer
+└─ Guard admin avec vérification is_active
+```
+
+### Pages Web
+```
+🎨 INTERFACE ADMIN
+├─ index.html               (Dashboard principal)
+├─ login.html               (Authentification)
+├─ gestion-admins.html      (Gestion équipe admin)
+├─ tarifs.html              (Grilles tarifaires)
+├─ abonnements.html         (Gestion abonnements PRO)
+├─ paiements.html           (Audit financier)
+├─ operations.html          (Monitoring temps réel)
+└─ commencer-a-payer.html   (Générateur paiement Wave)
+```
+
+---
+
+## 🚀 Installation
+
+### Prérequis
+
+- Compte Supabase (gratuit)
+- GitHub Pages activé
+- Node.js (optionnel, pour développement local)
+
+### 1. Cloner le repo
+```bash
+git clone https://github.com/beauville/digiy-hub-admin.git
+cd digiy-hub-admin
+```
+
+### 2. Configuration Supabase
+
+#### a) Créer un projet Supabase
+- Va sur https://supabase.com
+- Créer un nouveau projet
+- Note ton `SUPABASE_URL` et `SUPABASE_ANON_KEY`
+
+#### b) Exécuter les migrations SQL
+
+Dans Supabase SQL Editor, exécute les scripts dans cet ordre :
+
+**1. Table admin_users + trigger**
+```sql
+CREATE TABLE IF NOT EXISTS public.admin_users (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'viewer'
+    CHECK (role IN ('super_admin','admin','manager','viewer')),
+  city TEXT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.admin_users (user_id, role, city, is_active)
+  VALUES (NEW.id, 'viewer', NULL, true)
+  ON CONFLICT (user_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_new_user();
+
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated all admin_users" 
+ON public.admin_users 
+FOR ALL TO authenticated 
+USING (true) WITH CHECK (true);
+```
+
+**2. Tables tarification**
+```sql
+CREATE TABLE IF NOT EXISTS public.city_pricing_ride (
+  city TEXT PRIMARY KEY,
+  base_fare INTEGER NOT NULL DEFAULT 0,
+  per_km INTEGER NOT NULL DEFAULT 0,
+  floor_fare INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.city_pricing_fret (
+  city TEXT NOT NULL,
+  vol TEXT NOT NULL,
+  base_fare INTEGER NOT NULL DEFAULT 0,
+  per_km INTEGER NOT NULL DEFAULT 0,
+  floor_fare INTEGER NOT NULL DEFAULT 0,
+  vol_floor INTEGER NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (city, vol)
+);
+
+ALTER TABLE public.city_pricing_ride ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.city_pricing_fret ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated all ride" 
+ON public.city_pricing_ride FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated all fret" 
+ON public.city_pricing_fret FOR ALL TO authenticated USING (true) WITH CHECK (true);
+```
+
+**3. Tables opérations**
+```sql
+CREATE TABLE IF NOT EXISTS public.driver_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  city TEXT,
+  is_online BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.ride_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  city TEXT,
+  area TEXT,
+  client_phone TEXT,
+  status TEXT DEFAULT 'new',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.fret_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  city TEXT,
+  area TEXT,
+  client_phone TEXT,
+  status TEXT DEFAULT 'new',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.driver_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ride_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fret_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated read drivers" 
+ON public.driver_profiles FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Allow authenticated read ride_req" 
+ON public.ride_requests FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Allow authenticated read fret_req" 
+ON public.fret_requests FOR SELECT TO authenticated USING (true);
+```
+
+**4. Tables abonnements PRO**
+```sql
+CREATE TABLE public.pro_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  business_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  city TEXT,
+  email TEXT,
+  pack TEXT CHECK (pack IN ('STARTER','PRO','BUSINESS','CUSTOM','SINGLE')),
+  status TEXT DEFAULT 'active' CHECK (status IN ('active','expired','suspended','pending')),
+  subscription_start TIMESTAMPTZ DEFAULT NOW(),
+  subscription_end TIMESTAMPTZ,
+  monthly_amount INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE public.pro_modules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  pro_id UUID REFERENCES public.pro_accounts(id) ON DELETE CASCADE,
+  module TEXT NOT NULL CHECK (module IN ('DRIVER','LOC','RESA','RESTO','MARKET','JOBS','BUILD','FRET_DRIVER','FRET_CLIENT','PAY')),
+  is_active BOOLEAN DEFAULT true,
+  tier_value INTEGER,
+  tier_label TEXT,
+  monthly_price INTEGER DEFAULT 0,
+  activated_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ,
+  UNIQUE(pro_id, module)
+);
+
+ALTER TABLE public.pro_accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pro_modules ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated all pro_accounts" 
+ON public.pro_accounts FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow authenticated all pro_modules" 
+ON public.pro_modules FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+CREATE OR REPLACE VIEW public.v_pro_subscriptions_admin AS
+SELECT 
+  pa.id as pro_id,
+  pa.business_name as pro_name,
+  pa.phone as pro_phone,
+  pa.email as pro_email,
+  pa.city,
+  pa.pack as pack_name,
+  pa.status,
+  pa.subscription_end as end_at,
+  pa.monthly_amount,
+  pa.created_at,
+  string_agg(
+    CASE WHEN pm.is_active THEN pm.module ELSE NULL END, 
+    ', '
+  ) as modules_text,
+  array_agg(
+    CASE WHEN pm.is_active THEN pm.module ELSE NULL END
+  ) FILTER (WHERE pm.is_active) as modules
+FROM public.pro_accounts pa
+LEFT JOIN public.pro_modules pm ON pm.pro_id = pa.id
+GROUP BY pa.id;
+```
+
+**5. Table paiements**
+```sql
+CREATE TABLE IF NOT EXISTS public.subscription_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  city TEXT,
+  amount INTEGER,
+  status TEXT DEFAULT 'pending',
+  pro_name TEXT,
+  pro_phone TEXT,
+  reference TEXT
+);
+
+ALTER TABLE public.subscription_payments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow authenticated read payments" 
+ON public.subscription_payments FOR SELECT TO authenticated USING (true);
+
+CREATE OR REPLACE VIEW public.v_payment_audit_admin AS
+SELECT 
+  id,
+  created_at,
+  city,
+  'ABONNEMENT' as module,
+  amount,
+  status,
+  pro_name,
+  pro_phone,
+  reference
+FROM public.subscription_payments;
+```
+
+#### c) Créer ton compte super admin
+```sql
+-- Remplace USER_ID par ton UUID depuis Authentication > Users
+INSERT INTO public.admin_users (user_id, role, city, is_active)
+VALUES ('TON_USER_ID_ICI', 'super_admin', 'Dakar', true);
+```
+
+### 3. Déploiement GitHub Pages
+```bash
+git add .
+git commit -m "initial deployment"
+git push origin main
+```
+
+Puis active GitHub Pages :
+- Repo Settings → Pages
+- Source : Deploy from branch `main` / `(root)`
+
+Ton hub sera disponible à : `https://TON_USERNAME.github.io/digiy-hub-admin/`
+
+---
+
+## 👥 Hiérarchie des rôles
+
+| Rôle | Accès | Permissions |
+|------|-------|-------------|
+| **super_admin** | Tout | Gestion admins, tarifs, abonnements, paiements, opérations |
+| **admin** | Ville assignée | Gestion complète de sa ville |
+| **manager** | Ville assignée | Consultation + modifications limitées |
+| **viewer** | Lecture seule | Consultation uniquement |
+
+---
+
+## 💎 Modèle tarifaire
+
+### Modules individuels
+
+| Module | Tarif | Type |
+|--------|-------|------|
+| DRIVER | 9,900 F/mois | Prix fixe |
+| RESTO PRO | 9,900 F/mois | Prix fixe |
+| MARKET | 12,900 F/mois | Prix fixe |
+| JOBS | 7,900 F/mois | Prix fixe |
+| BUILD | 9,900 F/mois | Prix fixe |
+
+### Modules à paliers
+
+**LOC (Location courte durée)**
+- 1-5 logements : 9,900 F/mois
+- 6-9 logements : 15,000 F/mois
+- 10-20 logements : 25,000 F/mois
+- 21-30 logements : 30,000 F/mois
+- 30+ logements : 50,000 F/mois
+
+**RESA (Réservations restaurant)**
+- 1-5 tables : 9,900 F/mois
+- 6-9 tables : 15,000 F/mois
+- 10-20 tables : 25,000 F/mois
+- 21-30 tables : 30,000 F/mois
+- 30+ tables : 50,000 F/mois
+
+**FRET (Livraisons)**
+
+*Chauffeur :*
+- LOCAL : 14,900 F/mois
+- RÉGIONAL : 29,900 F/mois
+- NATIONAL : 49,900 F/mois
+- INTERNATIONAL : 99,900 F/mois
+
+*Client :*
+- LOCAL : 4,900 F/mois
+- RÉGIONAL : 19,900 F/mois
+- NATIONAL : 39,900 F/mois
+- INTERNATIONAL : 69,900 F/mois
+
+### Packs combo
+
+| Pack | Prix | Modules inclus |
+|------|------|----------------|
+| STARTER | 19,900 F/mois | 2 modules au choix |
+| PRO | 29,900 F/mois | 4 modules au choix |
+| BUSINESS | 49,900 F/mois | TOUS les 9 modules |
+
+---
+
+## 🔐 Sécurité
+
+- **Authentication** : Supabase Auth (email/password)
+- **Authorization** : Row Level Security (RLS)
+- **Session** : Persistante avec Supabase
+- **HTTPS** : Forcé via GitHub Pages
+- **API Keys** : Côté client (anon key publique)
+
+---
+
+## 🛠️ Stack technique
+
+- **Frontend** : HTML5, CSS3, JavaScript (Vanilla)
+- **Backend** : Supabase (PostgreSQL + Auth + Storage)
+- **Hosting** : GitHub Pages
+- **CDN** : Supabase JS v2
+- **Design** : Custom CSS (system-ui font stack)
+
+---
+
+## 📱 Fonctionnalités
+
+### ✅ Implémentées
+
+- [x] Authentification sécurisée
+- [x] Dashboard admin personnalisé
+- [x] Gestion multi-niveaux des admins
+- [x] Tarification RIDE/FRET par ville
+- [x] Gestion abonnements PRO
+- [x] Audit paiements
+- [x] Monitoring opérations temps réel
+- [x] Générateur paiement Wave
+
+### 🚧 En développement
+
+- [ ] Inscription client gratuite
+- [ ] Formulaire inscription PRO public
+- [ ] Webhook validation paiements Wave
+- [ ] Dashboards graphiques (revenus, KPIs)
+- [ ] Notifications SMS/Email
+- [ ] Export Excel/PDF
+
+---
+
+## 🤝 Contribution
+
+Ce projet est privé. Pour toute question ou suggestion :
+- WhatsApp : +221 77 134 28 89
+- Email : contact@digiylyfe.com
+
+---
+
+## 📄 Licence
+
+© 2024 DIGIYLYFE — Tous droits réservés  
+Made in Sénégal 🇸🇳 avec 🦅
+
+---
+
+## 🦅 Philosophie DIGIY
+
+**0% commission · Paiement direct · Souveraineté digitale**
+
+Enracinés en Afrique, connectés au monde.  
+Pierre par pierre, on construit l'empire.  
+Se surpasser, se dépasser, avoir l'envie d'avoir envie.
+
+**GO GO GO !** 🔥
+
+🚀 SAUVEGARDE CE README
+bashcd ~/Desktop/digiy-hub-admin
+
+# Crée README.md avec le contenu ci-dessus
+
+git add README.md
+git commit -m "add comprehensive README"
+git push origin main
+
+VOILÀ FRÉROT ! README COMPLET ! 🦅

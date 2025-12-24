@@ -190,7 +190,7 @@
   <h1>Inscription Gratuite</h1>
   <div class="sub">
     Créez votre compte DIGIY en 30 secondes.<br>
-    <strong>100% gratuit</strong>, accès immédiat à tous les services.
+    <strong>100% gratuit</strong>, accès immédiat aux apps clients.
   </div>
 
   <div class="free">
@@ -238,7 +238,7 @@
   <div id="msg" class="msg"></div>
 
   <div class="footer">
-    Déjà inscrit ? <a href="login-client.html">Se connecter</a><br>
+    Vous êtes PRO ? <a href="commencer-a-payer.html">S'abonner ici</a><br>
     <a href="index.html" style="color:#94a3b8;font-weight:600;">← Retour admin</a>
   </div>
 </div>
@@ -258,6 +258,20 @@ const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key
 const form = document.getElementById('signupForm');
 const btnSubmit = document.getElementById('btnSubmit');
 const msg = document.getElementById('msg');
+
+// Détecte l'app de destination depuis l'URL
+const urlParams = new URLSearchParams(window.location.search);
+const targetApp = urlParams.get('app') || 'hub';
+
+// URLs de redirection vers les apps clients
+const CLIENT_APPS = {
+  driver: 'https://beauville.github.io/digiy-driver-client/',
+  resa: 'https://beauville.github.io/digiy-resa-client/',
+  loc: 'https://beauville.github.io/digiy-loc-client/',
+  fret: 'https://beauville.github.io/digiy-fret-client/',
+  market: 'https://beauville.github.io/digiy-market-client/',
+  hub: 'https://beauville.github.io/digiy-client-hub/'
+};
 
 function showMsg(text, type = 'error') {
   msg.textContent = text;
@@ -319,10 +333,12 @@ form.addEventListener('submit', async (e) => {
 
     if (profileError) throw profileError;
 
-    showMsg('✅ Inscription réussie ! Bienvenue chez DIGIY 🦅', 'success');
+    showMsg(`✅ Inscription réussie ! Redirection vers l'app ${targetApp.toUpperCase()}...`, 'success');
     
+    // Redirection vers l'app client appropriée
     setTimeout(() => {
-      window.location.href = 'app-client.html';
+      const redirectUrl = CLIENT_APPS[targetApp] || CLIENT_APPS.hub;
+      window.location.href = redirectUrl;
     }, 2000);
 
   } catch (err) {
@@ -335,3 +351,20 @@ form.addEventListener('submit', async (e) => {
 </script>
 </body>
 </html>
+
+🔗 LIENS À METTRE DANS TES APPS CLIENTS
+Dans chaque app client (DRIVER, RÉSA, LOC, etc.), ajoute un bouton :
+html<!-- Bouton dans DIGIY DRIVER Client -->
+<a href="https://beauville.github.io/digiy-hub-admin/inscription-client.html?app=driver">
+  S'inscrire gratuitement
+</a>
+
+<!-- Bouton dans DIGIY RÉSA Client -->
+<a href="https://beauville.github.io/digiy-hub-admin/inscription-client.html?app=resa">
+  S'inscrire gratuitement
+</a>
+
+<!-- Bouton dans DIGIY LOC Client -->
+<a href="https://beauville.github.io/digiy-hub-admin/inscription-client.html?app=loc">
+  S'inscrire gratuitement
+</a>

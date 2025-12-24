@@ -38,9 +38,22 @@
       width:100%;
       border:1px solid rgba(148,163,184,0.2);
     }
+    .logo{
+      width:56px;
+      height:56px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--gold),#f97316);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:28px;
+      margin:0 auto 16px;
+      box-shadow:0 12px 32px rgba(250,204,21,0.25);
+    }
     h1{
       margin:0 0 8px;
       font-size:28px;
+      text-align:center;
       background:linear-gradient(135deg,var(--green),var(--gold));
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
@@ -50,6 +63,7 @@
       margin:0 0 24px;
       font-size:14px;
       line-height:1.6;
+      text-align:center;
     }
     .free{
       background:rgba(34,197,94,0.15);
@@ -60,7 +74,7 @@
       font-weight:900;
       color:#d1fae5;
       text-align:center;
-      font-size:14px;
+      font-size:13px;
       letter-spacing:.08em;
     }
     .form-group{margin-bottom:16px}
@@ -109,7 +123,7 @@
       display:none;
       font-weight:700;
     }
-    .msg.error{background:#fee;color:#c00;display:block}
+    .msg.error{background:#fee2e2;color:#991b1b;display:block}
     .msg.success{background:#d1fae5;color:#065f46;display:block}
     .footer{
       text-align:center;
@@ -117,36 +131,37 @@
       color:var(--muted);
       font-size:13px;
     }
-    .footer a{color:var(--gold);text-decoration:none}
+    .footer a{color:var(--gold);text-decoration:none;font-weight:700}
   </style>
 </head>
 
 <body>
 <div class="box">
-  <h1>🦅 Inscription Gratuite</h1>
+  <div class="logo">🦅</div>
+  <h1>Inscription Gratuite</h1>
   <div class="sub">
     Créez votre compte DIGIY Client en 30 secondes.
-    <strong>100% gratuit</strong>, pas de carte bancaire, accès immédiat.
+    <strong>100% gratuit</strong>, accès immédiat.
   </div>
 
   <div class="free">
-    ✅ INSCRIPTION GRATUITE · 0% COMMISSION · PAIEMENT DIRECT
+    ✅ GRATUIT · 0% COMMISSION · PAIEMENT DIRECT
   </div>
 
   <form id="signupForm">
     <div class="form-group">
       <label>Nom complet *</label>
-      <input type="text" id="fullName" required placeholder="Astou Diop" />
+      <input type="text" id="fullName" required placeholder="Astou Diop" autocomplete="name" />
     </div>
 
     <div class="form-group">
       <label>Téléphone *</label>
-      <input type="tel" id="phone" required placeholder="+221 77 123 45 67" />
+      <input type="tel" id="phone" required placeholder="+221 77 123 45 67" autocomplete="tel" />
     </div>
 
     <div class="form-group">
-      <label>Email (optionnel)</label>
-      <input type="email" id="email" placeholder="astou@example.com" />
+      <label>Email</label>
+      <input type="email" id="email" placeholder="astou@example.com" autocomplete="email" />
     </div>
 
     <div class="form-group">
@@ -156,7 +171,7 @@
 
     <div class="form-group">
       <label>Mot de passe *</label>
-      <input type="password" id="password" required placeholder="Min. 6 caractères" />
+      <input type="password" id="password" required placeholder="Min. 6 caractères" autocomplete="new-password" />
     </div>
 
     <button type="submit" class="btn" id="btnSubmit">
@@ -167,13 +182,16 @@
   <div id="msg" class="msg"></div>
 
   <div class="footer">
-    Déjà inscrit ? <a href="login-client.html">Se connecter</a>
+    Déjà inscrit ? <a href="login-client.html">Se connecter</a><br>
+    <a href="index.html" style="color:var(--muted);">← Retour admin</a>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+console.log("🚀 Inscription client chargée");
+
 const SUPABASE_CONFIG = {
   url: "https://wesqmwjjtsefyjnluosj.supabase.co",
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA"
@@ -214,13 +232,15 @@ form.addEventListener('submit', async (e) => {
   msg.style.display = 'none';
 
   try {
-    // 1. Créer le compte auth
+    console.log("Création compte auth...");
+    
     const { data: authData, error: authError } = await sb.auth.signUp({
-      phone: phone,
+      email: email || `${phone.replace(/[^0-9]/g, '')}@digiy.temp`,
       password: password,
       options: {
         data: {
           full_name: fullName,
+          phone: phone,
           user_type: 'client'
         }
       }
@@ -228,7 +248,8 @@ form.addEventListener('submit', async (e) => {
 
     if (authError) throw authError;
 
-    // 2. Créer le profil client
+    console.log("Création profil client...");
+
     const { error: profileError } = await sb
       .from('client_accounts')
       .insert({
@@ -242,7 +263,7 @@ form.addEventListener('submit', async (e) => {
 
     if (profileError) throw profileError;
 
-    showMsg('✅ Inscription réussie ! Redirection...', 'success');
+    showMsg('✅ Inscription réussie ! Bienvenue chez DIGIY 🦅', 'success');
     
     setTimeout(() => {
       window.location.href = 'app-client.html';

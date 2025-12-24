@@ -263,15 +263,25 @@ const msg = document.getElementById('msg');
 const urlParams = new URLSearchParams(window.location.search);
 const targetApp = urlParams.get('app') || 'hub';
 
-// URLs de redirection vers les apps clients
+// Redirection UNIQUE vers l'espace client gratuit DIGIY
 const CLIENT_APPS = {
-  driver: 'https://beauville.github.io/digiy-driver-client/',
-  resa: 'https://beauville.github.io/digiy-resa-client/',
-  loc: 'https://beauville.github.io/digiy-loc-client/',
-  fret: 'https://beauville.github.io/digiy-fret-client/',
-  market: 'https://beauville.github.io/digiy-market-client/',
-  hub: 'https://beauville.github.io/digiy-client-hub/'
+  driver: 'https://beauville.github.io/digiy-espace-client/?app=driver',
+  resa: 'https://beauville.github.io/digiy-espace-client/?app=resa',
+  loc: 'https://beauville.github.io/digiy-espace-client/?app=loc',
+  fret: 'https://beauville.github.io/digiy-espace-client/?app=fret',
+  market: 'https://beauville.// Redirection UNIQUE vers l'espace client gratuit DIGIY
+const CLIENT_APPS = {
+  driver: 'https://beauville.github.io/digiy-espace-client/?app=driver',
+  resa: 'https://beauville.github.io/digiy-espace-client/?app=resa',
+  loc: 'https://beauville.github.io/digiy-espace-client/?app=loc',
+  fret: 'https://beauville.github.io/digiy-espace-client/?app=fret',
+  market: 'https://beauville.github.io/digiy-espace-client/?app=market',
+  hub: 'https://beauville.github.io/digiy-espace-client/'
 };
+.io/digiy-espace-client/?app=market',
+  hub: 'https://beauville.github.io/digiy-espace-client/'
+};
+
 
 function showMsg(text, type = 'error') {
   msg.textContent = text;

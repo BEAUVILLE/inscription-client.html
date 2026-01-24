@@ -44,10 +44,77 @@
     .free{
       background:linear-gradient(135deg, #dcfce7, #d1fae5);
       border:2px solid #22c55e;
-      padding:14px; border-radius:14px; margin-bottom:28px;
+      padding:14px; border-radius:14px; margin-bottom:18px;
       font-weight:900; color:#065f46; text-align:center;
       font-size:13px; letter-spacing:.08em;
     }
+
+    /* =========================
+       WHY INSCRIPTION (CLIENT)
+    ========================= */
+    .why{
+      margin:0 0 18px;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid rgba(34,197,94,.25);
+      background:linear-gradient(135deg, rgba(22,163,74,.08), rgba(250,204,21,.08));
+    }
+    .why h2{
+      margin:0 0 8px;
+      font-size:16px;
+      font-weight:950;
+      color:#0f172a;
+      text-align:center;
+    }
+    .why p{
+      margin:0 0 12px;
+      color:#475569;
+      font-weight:650;
+      line-height:1.5;
+      text-align:center;
+      font-size:13px;
+    }
+    .why p strong{color:#0f172a}
+    .why-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .why-card{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.22);
+      background:#ffffff;
+      box-shadow:0 10px 24px rgba(0,0,0,.06);
+      font-size:12.5px;
+      color:#0f172a;
+      font-weight:700;
+      line-height:1.35;
+    }
+    .why-ico{
+      width:34px;height:34px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(22,163,74,.10);
+      border:1px solid rgba(22,163,74,.18);
+      font-size:16px;
+      flex:0 0 auto;
+    }
+    .why-foot{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      text-align:center;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.06em;
+      color:#065f46;
+      background:linear-gradient(135deg, #dcfce7, #d1fae5);
+      border:2px solid #22c55e;
+    }
+
     .features{
       display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:28px;
     }
@@ -93,6 +160,7 @@
     .footer a:hover{color:var(--gold)}
     @media(max-width:480px){
       .features{grid-template-columns:1fr}
+      .why-grid{grid-template-columns:1fr}
       .box{padding:28px 20px}
     }
   </style>
@@ -108,6 +176,41 @@
   </div>
 
   <div class="free">✅ GRATUIT À VIE · 0% COMMISSION · PAIEMENT DIRECT</div>
+
+  <!-- =========================
+       ✅ Pourquoi s'inscrire ?
+  ========================= -->
+  <div class="why" id="why">
+    <h2>✨ Pourquoi créer un compte ?</h2>
+    <p>
+      Pour te donner un accès simple et sécurisé aux services DIGIY.<br>
+      <strong>On ne vend pas tes données.</strong> C’est juste ton passeport DIGIY.
+    </p>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-ico">🔐</div>
+        <div><strong>Accès sécurisé</strong><br>Ton espace client, à toi.</div>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico">⚡</div>
+        <div><strong>Plus rapide</strong><br>Réserver / commander en 2 clics.</div>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico">📍</div>
+        <div><strong>Préférences</strong><br>Ville, favoris, historique.</div>
+      </div>
+
+      <div class="why-card">
+        <div class="why-ico">💬</div>
+        <div><strong>Contact direct</strong><br>WhatsApp pro, sans intermédiaire.</div>
+      </div>
+    </div>
+
+    <div class="why-foot">✅ 100% gratuit · ✅ 0% commission · ✅ Paiement direct au pro</div>
+  </div>
 
   <div class="features">
     <div class="feature">🚗 Commander VTC</div>
@@ -148,9 +251,10 @@
   <div id="msg" class="msg"></div>
 
   <div class="footer">
-  Déjà inscrit ? <a href="https://beauville.github.io/digiy-espace-client/">Ouvrir mon espace</a><br>
-  Vous êtes PRO ? <a href="https://beauville.github.io/inscription-digiy/">S'abonner ici</a><br>
-  <a href="https://beauville.github.io/digiy-hub/" style="color:#94a3b8;font-weight:600;">← Retour DIGIY Hub</a>
+    Déjà inscrit ? <a href="https://beauville.github.io/digiy-espace-client/">Ouvrir mon espace</a><br>
+    Vous êtes PRO ? <a href="https://beauville.github.io/inscription-digiy/">S'abonner ici</a><br>
+    <a href="https://beauville.github.io/digiy-hub/" style="color:#94a3b8;font-weight:600;">← Retour DIGIY Hub</a>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -181,7 +285,6 @@ const CLIENT_APPS = {
   jobs:    "https://beauville.github.io/digiy-espace-client/?app=jobs",
   explore: "https://beauville.github.io/digiy-espace-client/?app=explore",
   ndimbal: "https://beauville.github.io/digiy-espace-client/?app=ndimbal",
-
   hub:     "https://beauville.github.io/digiy-espace-client/"
 };
 
@@ -202,7 +305,6 @@ function digitsOnly(v){ return (v||"").replace(/[^\d]/g,""); }
 
 /* ✅ email fallback stable (si email vide) */
 function fallbackEmailFromPhone(phone){
-  // email "stable" (pas Date.now) -> évite 10 comptes pour un même numéro
   const d = digitsOnly(phone);
   return `c${d}@digiy.temp`;
 }
@@ -331,3 +433,4 @@ form.addEventListener("submit", async (e) => {
 
 </body>
 </html>
+

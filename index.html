@@ -158,106 +158,176 @@
 <script>
 console.log("🚀 Inscription client chargée");
 
-const SUPABASE_CONFIG = {
-  url: "https://wesqmwjjtsefyjnluosj.supabase.co",
-  key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA"
-};
+const SUPABASE_URL = "https://wesqmwjjtsefyjnluosj.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indlc3Ftd2pqdHNlZnlqbmx1b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNzg4ODIsImV4cCI6MjA4MDc1NDg4Mn0.dZfYOc2iL2_wRYL3zExZFsFSBK6AbMeOid2LrIjcTdA";
 
-const sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.key);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const form = document.getElementById('signupForm');
-const btnSubmit = document.getElementById('btnSubmit');
-const msg = document.getElementById('msg');
+const form = document.getElementById("signupForm");
+const btnSubmit = document.getElementById("btnSubmit");
+const msg = document.getElementById("msg");
 
-// Détecte l'app de destination depuis l'URL
 const urlParams = new URLSearchParams(window.location.search);
-const targetApp = (urlParams.get('app') || 'hub').toLowerCase();
+const targetApp = (urlParams.get("app") || "hub").toLowerCase();
 
-// ✅ Redirection UNIQUE vers TON espace client gratuit
 const CLIENT_APPS = {
-  driver: 'https://beauville.github.io/digiy-espace-client/?app=driver',
-  resa:   'https://beauville.github.io/digiy-espace-client/?app=resa',
-  loc:    'https://beauville.github.io/digiy-espace-client/?app=loc',
-  fret:   'https://beauville.github.io/digiy-espace-client/?app=fret',
-  market: 'https://beauville.github.io/digiy-espace-client/?app=market',
-  hub:    'https://beauville.github.io/digiy-espace-client/'
+  driver:  "https://beauville.github.io/digiy-espace-client/?app=driver",
+  resa:    "https://beauville.github.io/digiy-espace-client/?app=resa",
+  loc:     "https://beauville.github.io/digiy-espace-client/?app=loc",
+  fret:    "https://beauville.github.io/digiy-espace-client/?app=fret",
+  market:  "https://beauville.github.io/digiy-espace-client/?app=market",
+  build:   "https://beauville.github.io/digiy-espace-client/?app=build",
+  jobs:    "https://beauville.github.io/digiy-espace-client/?app=jobs",
+  explore: "https://beauville.github.io/digiy-espace-client/?app=explore",
+  ndimbal: "https://beauville.github.io/digiy-espace-client/?app=ndimbal",
+
+  hub:     "https://beauville.github.io/digiy-espace-client/"
 };
 
-function showMsg(text, type = 'error') {
+function showMsg(text, type="error"){
   msg.textContent = text;
-  msg.className = 'msg ' + type;
+  msg.className = "msg " + type;
 }
 
-// petit nettoyage téléphone (pour email temporaire)
-function digitsOnly(v){ return (v||'').replace(/[^\d]/g,''); }
+/* ✅ Phone normalize (Senegal friendly) */
+function normPhone(p){
+  p = String(p||"").trim().replace(/\s+/g,"").replace(/[^\d+]/g,"");
+  if(p.startsWith("00221")) p = "+221" + p.slice(5);
+  if(!p.startsWith("+") && p.startsWith("221")) p = "+" + p;
+  if(!p.startsWith("+221") && /^\d{9}$/.test(p)) p = "+221" + p;
+  return p;
+}
+function digitsOnly(v){ return (v||"").replace(/[^\d]/g,""); }
 
-form.addEventListener('submit', async (e) => {
+/* ✅ email fallback stable (si email vide) */
+function fallbackEmailFromPhone(phone){
+  // email "stable" (pas Date.now) -> évite 10 comptes pour un même numéro
+  const d = digitsOnly(phone);
+  return `c${d}@digiy.temp`;
+}
+
+/* ✅ Redirect helper */
+function goNext(){
+  const redirectUrl = CLIENT_APPS[targetApp] || CLIENT_APPS.hub;
+  window.location.href = redirectUrl;
+}
+
+async function upsertClientProfile(userId, payload){
+  // ⚠️ nécessite une policy RLS qui autorise insert/update sur son propre user_id
+  // Sinon ça échoue et on continue quand même.
+  try{
+    const { error } = await sb
+      .from("client_accounts")
+      .upsert(
+        {
+          user_id: userId,
+          full_name: payload.full_name,
+          phone: payload.phone,
+          email: payload.email || null,
+          city: payload.city,
+          is_active: true
+        },
+        { onConflict: "user_id" }
+      );
+    if(error) console.warn("Profil client upsert (RLS ?) :", error);
+  } catch (e){
+    console.warn("Profil client upsert exception:", e);
+  }
+}
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const fullName = document.getElementById('fullName').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const city = document.getElementById('city').value.trim();
-  const password = document.getElementById('password').value;
+  const fullName = document.getElementById("fullName").value.trim();
+  const phoneRaw = document.getElementById("phone").value.trim();
+  const emailRaw = document.getElementById("email").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const password = document.getElementById("password").value;
 
-  if (!fullName || !phone || !city || !password) return showMsg('⚠️ Veuillez remplir tous les champs obligatoires');
-  if (password.length < 6) return showMsg('⚠️ Le mot de passe doit contenir au moins 6 caractères');
+  const phone = normPhone(phoneRaw);
+
+  if(!fullName || !phone || !city || !password){
+    showMsg("⚠️ Veuillez remplir tous les champs obligatoires");
+    return;
+  }
+  if(password.length < 6){
+    showMsg("⚠️ Le mot de passe doit contenir au moins 6 caractères");
+    return;
+  }
 
   btnSubmit.disabled = true;
-  btnSubmit.textContent = '⏳ Inscription en cours...';
-  msg.style.display = 'none';
+  btnSubmit.textContent = "⏳ Inscription en cours...";
+  msg.style.display = "none";
 
-  try {
-    const phoneDigits = digitsOnly(phone);
-    const tempEmail = email || (`c${phoneDigits}.${Date.now()}@digiy.temp`);
+  try{
+    // ✅ Toujours un email (réel si fourni, sinon fallback stable)
+    const email = emailRaw || fallbackEmailFromPhone(phone);
 
-    console.log("Création compte auth...");
-
+    // 1) SIGN UP
     const { data: authData, error: authError } = await sb.auth.signUp({
-      email: tempEmail,
-      password: password,
+      email,
+      password,
       options: {
-        data: { full_name: fullName, phone: phone, user_type: 'client' }
+        data: {
+          full_name: fullName,
+          phone,
+          city,
+          user_type: "client"
+        }
       }
     });
 
-    if (authError) throw authError;
+    // Si déjà existant (email) => on bascule en SIGN IN direct
+    if(authError){
+      const msgErr = String(authError.message || "");
+      const isExists = /already registered|already exists|User already registered/i.test(msgErr);
+      if(isExists){
+        const { data: signInData, error: signInErr } = await sb.auth.signInWithPassword({ email, password });
+        if(signInErr) throw signInErr;
 
-    // Si ton projet exige confirmation email, user peut être null → on redirige quand même
-    const userId = authData?.user?.id;
+        const u = signInData?.user;
+        if(u?.id){
+          await upsertClientProfile(u.id, { full_name: fullName, phone, email: emailRaw, city });
+        }
 
-    if (userId) {
-      console.log("Création profil client...");
-
-      const { error: profileError } = await sb
-        .from('client_accounts')
-        .insert({
-          user_id: userId,
-          full_name: fullName,
-          phone: phone,
-          email: email || null,
-          city: city,
-          is_active: true
-        });
-
-      // Si RLS bloque, on ne casse pas l'inscription (le compte auth est déjà créé)
-      if (profileError) console.warn("Profil non inséré (RLS ?):", profileError);
+        showMsg("✅ Connexion OK ! Ouverture de ton espace client...", "success");
+        setTimeout(goNext, 900);
+        return;
+      }
+      throw authError;
     }
 
-    showMsg('✅ Inscription réussie ! Ouverture de ton espace client...', 'success');
+    // 2) USER ID (peut être null si confirmation email activée)
+    const userId = authData?.user?.id;
 
-    setTimeout(() => {
-      const redirectUrl = CLIENT_APPS[targetApp] || CLIENT_APPS.hub;
-      window.location.href = redirectUrl;
-    }, 1200);
+    // 3) Profil (si on a un userId)
+    if(userId){
+      await upsertClientProfile(userId, { full_name: fullName, phone, email: emailRaw, city });
+    }
 
-  } catch (err) {
-    console.error('Erreur inscription:', err);
-    showMsg('❌ ' + (err.message || 'Erreur lors de l\'inscription'));
+    // 4) Stock local (utile UX)
+    localStorage.setItem("digiy_client_phone", phone);
+    localStorage.setItem("digiy_client_name", fullName);
+
+    // 5) Message selon confirmation email
+    if(!userId){
+      showMsg("✅ Compte créé ! Vérifie ton email si on te le demande, puis ouvre ton espace.", "success");
+      setTimeout(goNext, 1300);
+      return;
+    }
+
+    showMsg("✅ Inscription réussie ! Ouverture de ton espace client...", "success");
+    setTimeout(goNext, 900);
+
+  } catch(err){
+    console.error("Erreur inscription:", err);
+    showMsg("❌ " + (err?.message || "Erreur lors de l'inscription"));
     btnSubmit.disabled = false;
-    btnSubmit.textContent = 'S\'inscrire gratuitement 🦅';
+    btnSubmit.textContent = "S'inscrire gratuitement 🦅";
   }
 });
 </script>
+
 </body>
 </html>
